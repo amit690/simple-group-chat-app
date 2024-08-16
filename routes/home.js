@@ -6,12 +6,27 @@ const router=express.Router();
 
 router.get('/',(req,res,next)=>{
 
-    fs.readFile('./routes/message.txt',(err,data)=>{
+    fs.readFile('./routes/message.txt','utf8',(err,data)=>{
         if(err){
             console.log('file reding error',err);
             return res.status(500).send("Internal Server Error");
         }
-        res.send(`<p>${data}</p><form action="/" method="POST" ><input type="text" name="message"><button type="submit">send</button></form>`);
+        const formattedData = data.split('\n').map(line => `<p>${line}</p>`).join('');
+
+        res.send(`
+            ${formattedData}
+            <form id="messageForm" action="/" method="POST">
+                <input type="text" name="message" placeholder="Enter your message">
+                <button type="submit">Send</button>
+            </form>
+            <script>
+                document.getElementById('messageForm').onsubmit = function(event) {
+                    const userName = localStorage.getItem('userName') || 'Guest';
+                    const messageInput = document.querySelector('input[name="message"]');
+                    messageInput.value = userName + ": " + messageInput.value;
+                };
+            </script>
+        `);
     });
 
     
